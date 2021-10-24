@@ -26,7 +26,7 @@ display = None
 
 if IS_LINUX:
     from pyvirtualdisplay import Display
-    display = Display(visible=0, size=(800, 600))
+    display = Display(visible=False, size=(800, 600))
     display.start()
 
 
@@ -39,6 +39,7 @@ def startFireFox(url=URL):
 def startChrome(url=URL, path=None):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
     if path:
         driver = webdriver.Chrome(executable_path=path, options=chrome_options)
     else:
