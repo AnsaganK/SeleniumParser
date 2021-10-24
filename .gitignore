@@ -1,0 +1,8 @@
+venv
+geckodriver.exe
+chromedriver.exe
+index.txt
+result.txt
+hotels.csv
+hotels_parser.rar
+parsingHotels.rar
