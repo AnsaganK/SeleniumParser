@@ -154,10 +154,7 @@ def place_detail(cid):
     global startTime
 
     url = CID_URL.format(cid)
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)
+    driver = startChrome(url=url)
     try:
         endTime = datetime.now()
         time = endTime - startTime
