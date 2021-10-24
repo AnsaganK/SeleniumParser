@@ -3,7 +3,7 @@ from selenium import webdriver
 import csv
 import time
 from bs4 import BeautifulSoup as BS
-
+from constants import CHROME_PATH
 from datetime import datetime
 
 from selenium.webdriver.chrome.options import Options
@@ -22,16 +22,19 @@ KEY = 'AIzaSyAbOkxUWUw9z54up8AiMSCMX7rO7-8hqv8'
 CID_API_URL = 'https://maps.googleapis.com/maps/api/place/details/json?cid={0}&key='+KEY
 CID_URL = 'https://maps.google.com/?cid={0}'
 
-def startFireFox():
+def startFireFox(url=URL):
     driver = webdriver.Firefox()
-    driver.get(URL)
+    driver.get(url)
     return driver
 
-def startChrome():
+def startChrome(url=URL, path=None):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(URL)
+    if path:
+        driver = webdriver.Chrome(executable_path=path, options=chrome_options)
+    else:
+        driver = webdriver.Chrome(options=chrome_options)
+    driver.get(url)
     return driver
 
 
@@ -249,9 +252,8 @@ def get_pagination(driver, page):
 
 # Запуск скрипта
 def main():
-
     #driver = startChrome()
-    driver = startChrome()
+    driver = startChrome(path=CHROME_PATH)
     try:
         for page in range(1, PAGE+1):
             # Проверяю сколько доступных страниц для клика, и если следующая страница есть в пагинации то происходит клик
