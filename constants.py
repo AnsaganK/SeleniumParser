@@ -1,1 +1,2 @@
 CHROME_PATH = None
+IS_LINUX = False

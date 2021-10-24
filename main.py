@@ -3,7 +3,7 @@ from selenium import webdriver
 import csv
 import time
 from bs4 import BeautifulSoup as BS
-from constants import CHROME_PATH
+from constants import CHROME_PATH, IS_LINUX
 from datetime import datetime
 
 from selenium.webdriver.chrome.options import Options
@@ -21,6 +21,15 @@ PAGE = 100  # Количество страниц для парсинга
 KEY = 'AIzaSyAbOkxUWUw9z54up8AiMSCMX7rO7-8hqv8'
 CID_API_URL = 'https://maps.googleapis.com/maps/api/place/details/json?cid={0}&key='+KEY
 CID_URL = 'https://maps.google.com/?cid={0}'
+
+display = None
+
+if IS_LINUX:
+    from pyvirtualdisplay import Display
+    display = Display(visible=0, size=(800, 600))
+    display.start()
+
+
 
 def startFireFox(url=URL):
     driver = webdriver.Firefox()
@@ -270,6 +279,8 @@ def main():
         print('Парсинг завершен')
         driver.close()
     except:
+        if display:
+            display.stop()
         print('Критическая ошибка')
         driver.close()
 
