@@ -30,16 +30,18 @@ if IS_LINUX:
     display.start()
 
 
-
 def startFireFox(url=URL):
     driver = webdriver.Firefox()
     driver.get(url)
     return driver
 
+
 def startChrome(url=URL, path=None):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-software-rasterizer")
     if path:
         driver = webdriver.Chrome(executable_path=path, options=chrome_options)
     else:
@@ -47,108 +49,25 @@ def startChrome(url=URL, path=None):
     driver.get(url)
     return driver
 
-
-def time_sleep(action, returned=False):
-    for i in range(20):
-        try:
-            data = action
-            if returned:
-                return data
-            break
-        except:
-            pass
-        time.sleep(1)
-    return ''
-
-
-# Функция для возврата данных из файла, если такого файла нет то создает
-def read_file():
+def is_find_object(driver, class_name):
     try:
-        file = open(FILE_NAME, 'r', encoding='utf-8')
-        reader = csv.reader(file, delimiter=',', lineterminator="\r")
-        file.close()
-        return reader
+        object = driver.find_element_by_class_name('x3AX1-LfntMc-header-title-title').text
     except:
-        write_file()
-        return read_file()
-
-# Функция для записи данных в файл, при создании файла
-# по умолчанию добавляются заголовки
-def write_file(data=[['№', 'Название', 'Адрес', 'Рейтинг', 'Сайт']]):
-    with open(FILE_NAME, mode='w', encoding='utf-8') as f:
-        writer = csv.writer(f, delimiter=',', lineterminator="\r")
-        for i in data:
-            writer.writerow(i)
+        object = ''
+    return object
 
 
-# Функция добавления данных в файл
-# не удаляя прежние данные
-def add_file(data):
-    with open(FILE_NAME, mode='a', encoding='utf-8') as f:
-        writer = csv.writer(f, delimiter=',', lineterminator="\r")
-        for i in data:
-            writer.writerow(i)
+def get_site(url):
+    r = requests.get(url)
+    if r.status_code == 200:
+        return r.text
+    return None
 
 
-# Перед тем как сохранять данные в файл мы должны
-# проверить создан ли файл и после добавить данные
-def save_file(data):
-    read_file()
-    add_file(data)
-
-# Функция для получения адреса отеля.Создано по причине того что адрес хранится в модальном
-# окне которое подгружается при клике на отель
-def get_address(driver, hotel, last_address, index, hotels):
-    hotel_list = hotels
-    for i in range(20):
-        try:
-            #hotel.find_element_by_class_name('dbg0pd').click()
-            try:
-                hotel.click()
-            except:
-                hotel = get_hotel(driver, hotel_list, index).click()
-            break
-        except:
-            pass
-        time.sleep(1)
-    address = last_address
-    for i in range(20):
-        try:
-            element = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "LrzXr"))
-            )
-            address = driver.find_element_by_class_name('LrzXr').text
-        except:
-            pass
-        if address != last_address:
-            return address
-        time.sleep(1)
-    return address
-
-
-def get_hotel(driver, hotels, index):
-    time.sleep(1)
-    hotel_list = hotels
-    for i in range(20):
-        try:
-            data = hotel_list[index]
-            return data
-        except:
-            print('Список отелей скрылся\n')
-            for j in range(20):
-                try:
-
-                    element = WebDriverWait(driver, 10).until(
-                            EC.presence_of_element_located((By.CLASS_NAME, "uMdZh"))
-                        )
-                    hotel_list = element
-
-                    hotel_list = driver.find_elements_by_class_name('uMdZh')
-                    break
-                except:
-                    pass
-                time.sleep(1)
-        time.sleep(1)
+def get_soup(html):
+    if html:
+        return BS(html)
+    return html
 
 
 def place_detail(cid):
@@ -159,8 +78,10 @@ def place_detail(cid):
     try:
         endTime = datetime.now()
         time = endTime - startTime
-        title = driver.find_element_by_class_name('x3AX1-LfntMc-header-title-title').text
-        print(driver.find_element_by_class_name('x3AX1-LfntMc-header-title-title').text)
+        title = is_find_object(driver, 'x3AX1-LfntMc-header-title-title')
+        address = is_find_object(driver, 'rogA2c')
+        phone_number = is_find_object(driver, '')
+        print(title, address, )
         print(time)
         print('Закрыто')
         driver.close()
@@ -186,16 +107,15 @@ def place_api_detail(cid):
 def parse_hotels(driver):
     global INDEX
     time.sleep(3)
-    hotels = time_sleep(driver.find_elements_by_class_name('uMdZh'), True)
+    hotels = driver.find_elements_by_class_name('uMdZh')
     print(len(hotels))
     for hotel in hotels:
         # print(hotel.get_attribute('innerHTML'))
         title = hotel.find_element_by_class_name('dbg0pd').text if hotel.find_element_by_class_name('dbg0pd') else None
         cid = hotel.find_element_by_class_name('C8TUKc').get_attribute('data-cid') if hotel.find_element_by_class_name('C8TUKc') else None
-        time.sleep(1)
+        # time.sleep(1)
         INDEX += 1
         print(INDEX, title, cid)
-
         place_detail(cid) if cid else None
         print('-------------')
         # title = ''
